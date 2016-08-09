@@ -14,7 +14,7 @@
 					<div class="uk-grid" data-uk-grid-margin="">
 						<div class="uk-width-medium-1-2 uk-text-center">
 							<figure class="uk-overlay uk-overlay-hover">
-								<a href="javascript:;" src="lesson_list.html">
+								<a href="{!! action('Admin\AdminController@administer_class') !!}">
 									<img src="{!! asset('img/teacher_menu-02-on.png') !!}" alt="班級設定">
 									<img src="{!! asset('img/teacher_menu-02-off.png') !!}" class="uk-overlay-panel uk-overlay-image" alt="班級設定">
 									<h3>班級設定</h3>

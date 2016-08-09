@@ -48,7 +48,7 @@
 													<td>a{{ ($student->id < 10 ? '00' : ($student->id < 100 ? '0' : '')).$student->id }}</td>
 													<td>{{ date('yndhi', strtotime($student->created_at)) }}</td>
 													<td>{{ $course[0]->course_name }}</td>
-													<td>{{ $i+1 }}</td>
+													<td>{{ $student->seat_no }}</td>
 													<td><a href="{!! action('Teacher\TeacherController@lh_student_info', [$alias, $course[0]->course_code, $student->id]) !!}" class="showunderline">{{ $student->first_name.' '.$student->last_name }}</a></td>
 													<td>{{ date('md-h:i', strtotime($student->created_at)) }}</td>
 												</tr>

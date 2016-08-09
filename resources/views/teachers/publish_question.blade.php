@@ -69,11 +69,12 @@
 													{!! $lesson[0]->description !!}
 													<br /><br />
 													@if( trim($lesson[0]->attached_doc) )
-													<a href="{!! asset('uploads/docs/'.$lesson[0]->attached_doc) !!}">Word文档</a>
+													<!-- a href="{!! asset('uploads/docs/'.$lesson[0]->attached_doc) !!}">Word文档</a -->
+													<iframe src="http://docs.google.com/gview?url={!! asset('uploads/docs/'.$lesson[0]->attached_doc) !!}&embedded=true" style="width:100%; height:600px;" frameborder="0"></iframe>
 													<br /><br />
 													@endif
 													@if( trim($lesson[0]->attached_pdf) )
-													<iframe src="{!! asset('uploads/pdfs/'.$lesson[0]->attached_pdf) !!}" width="100%" height="600"></iframe>
+													<iframe src="http://docs.google.com/gview?url={!! asset('uploads/pdfs/'.$lesson[0]->attached_pdf) !!}&embedded=true" style="width:100%; height:600px;" frameborder="0"></iframe>
 													<br /><br />
 													@endif
 													<?php
@@ -110,13 +111,15 @@
 														<hr class="uk-grid-divider">
 														<p>剩餘答題時間： <span class="uk-text-danger uk-text-bold uk-text-large">5 秒</span></p>
 													</form>
+													<hr class="uk-grid-divider">
+													<iframe src="{!! action('Teacher\TeacherController@student_answers', [$alias, $course[0]->course_code, $lesson[0]->id]) !!}" width="100%" height="500"></iframe>
 
 													<?php
-													$answers = DB::table('student_answers')
-																->where('lesson_id', $lesson[0]->id)
+													/*$students = DB::table('classes')
+																->join('users', 'users.id', '=', 'classes.student_id')
+																->where('classes.course_id', $course[0]->id)
 																->get();
 													?>
-													<hr class="uk-grid-divider">
 													<table class="uk-table uk-table-hover">
 														<thead>
 															<tr>
@@ -132,42 +135,55 @@
 															</tr>
 														</thead>
 														<tbody>
-															@forelse( $answers as $i => $answer )
+															@forelse( $students as $i => $student )
 															<?php
-																$student = DB::table('users')->where('id', $answer->student_id)->get();
+																$answer = DB::table('student_answers')
+																			->where('lesson_id', $lesson[0]->id)
+																			->where('student_id', $student->id)
+																			->get();
+																// $student = DB::table('users')->where('id', $answer->student_id)->get();
 															?>
 															<tr>
-																<td>a{{ ($answer->student_id < 10 ? '00' : ($answer->student_id < 100 ? '0' : '')).$answer->student_id }}</td>
-																<td>{{ date('yndhi', strtotime($student[0]->created_at)) }}</td>
+																<td>a{{ ($student->id < 10 ? '00' : ($student->id < 100 ? '0' : '')).$student->id }}</td>
+																<td>{{ date('yndhi', strtotime($student->created_at)) }}</td>
 																<td>{{ $course[0]->course_name }}</td>
-																<td>{{ $i }}</td>
-																<td><a href="{!! action('Teacher\TeacherController@lh_student_info', [$alias, $course[0]->course_code, $student[0]->id]) !!}" class="showunderline">{{ $student[0]->first_name.' '.$student[0]->last_name }}</a></td>
+																<td>{{ $student->seat_no }}</td>
+																<td><a href="{!! action('Teacher\TeacherController@lh_student_info', [$alias, $course[0]->course_code, $student->id]) !!}" class="showunderline">{{ $student->first_name.' '.$student->last_name }}</a></td>
 																<td><?php
-																if( $lesson[0]->question_type == '單選題' ) {
-																	$answer_txt = DB::table('questions')->where('answer_code', $answer->selected_answer)->value('answer');
-																	echo $answer_txt;
-																} else {
-																	$answer_txt = $answer->selected_answer;
-																	echo '<a href="'. action('Teacher\TeacherController@student_answer', [$alias, $course[0]->course_code, $lesson[0]->id, $student[0]->id]) .'" data-uk-lightbox="" data-lightbox-type="iframe"><i class="uk-icon-file-photo-o"></i> 查看答案</a>';
+																$answer_txt = '';
+																// wtf($answer);
+																if( count($answer) ) {
+																	if( $lesson[0]->question_type == '單選題' ) {
+																		$answer_txt = DB::table('questions')->where('answer_code', $answer[0]->selected_answer)->value('answer');
+																		echo $answer_txt;
+																	} else {
+																		$answer_txt = $answer[0]->selected_answer;
+																		echo '<a href="'. action('Teacher\TeacherController@student_answer', [$alias, $course[0]->course_code, $lesson[0]->id, $student->id]) .'" data-uk-lightbox="" data-lightbox-type="iframe"><i class="uk-icon-file-photo-o"></i> 查看答案</a>';
+																	}
 																}
 																?></td>
 																<td><?php
-																	$score = DB::table('student_scores')->where('student_id', $answer->student_id)->where('lesson_id', $lesson[0]->id)->value('score');
+																	$score = DB::table('student_scores')->where('student_id', $student->id)->where('lesson_id', $lesson[0]->id)->value('score');
 																	echo $score ? $score : 0;
 																?></td>
 																<td><?php
-																	echo '<a class="uk-button uk-button-primary" href="'. action('Teacher\TeacherController@score_student_answer', [$alias, $course[0]->course_code, $lesson[0]->id, $student[0]->id]) .'" data-uk-lightbox="" data-lightbox-type="iframe">給分</a>';
+																	echo '<a class="uk-button uk-button-primary" href="'. action('Teacher\TeacherController@score_student_answer', [$alias, $course[0]->course_code, $lesson[0]->id, $student->id]) .'" data-uk-lightbox="" data-lightbox-type="iframe">給分</a>';
 																?></td>
 																<td><span class="uk-text-muted"><?php
-																if( $answer_txt ) echo '已完成';
-																else if( !$answer_txt ) echo '未作答';
-																else echo '離線';
+																if( count($answer) ) echo '已完成';
+																else if( !count($answer) ) {
+																	if( strtotime($student->login_at) > strtotime($student->logout_at) ) {
+																		echo '未作答';
+																	} else {
+																		echo '離線';
+																	}
+																}
 																?></span></td>
 															</tr>
 															@empty
 															@endforelse
 														<tbody>
-													</table>
+													</table><?php */ ?>
 												</div>
 											</div>
 										</li>

@@ -40,6 +40,7 @@
 													<tr>
 														<th>管理員帳號</th>
 														<th>姓名</th>
+														<th>email</th>
 													</tr>
 												</thead>
 												<tbody>
@@ -47,6 +48,7 @@
 													<tr>
 														<td>a{{ ($admin->id < 10 ? '00' : ($admin->id < 100 ? '0' : '')).$admin->id }}</td>
 														<td>{{ $admin->first_name.' '.$admin->last_name }}</td>
+														<td>{{ $admin->email }}</td>
 													</tr>
 												@empty
 												@endforelse

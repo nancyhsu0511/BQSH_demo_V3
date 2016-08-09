@@ -31,8 +31,10 @@
 									<ul id="switcher-content" class="uk-switcher">
 										<li aria-hidden="true">
 											<br />      
-											<form class="uk-form">
-												<input type="text" placeholder="輸入老師編號" class="uk-form-width-medium"> <button class="uk-button uk-button-primary" type="button" data-uk-button>搜尋</button>
+											<form class="uk-form" method="post" action="{!! action('Admin\AdminController@search_teacher') !!}">
+												{!! csrf_field() !!}
+												<input type="text" name="keyw" placeholder="輸入老師編號" class="uk-form-width-medium" required />
+												<button class="uk-button uk-button-primary" type="submit" data-uk-button>搜尋</button>
 											</form>
 											<hr class="uk-grid-divider">
 											<table class="uk-table uk-table-hover">
@@ -40,6 +42,7 @@
 													<tr>
 														<th>教師編號</th>
 														<th>姓名</th>
+														<th>email</th>
 													</tr>
 												</thead>
 												<tbody>
@@ -47,6 +50,7 @@
 													<tr>
 														<td>t{{ ($teacher->id < 10 ? '00' : ($teacher->id < 100 ? '0' : '')).$teacher->id }}</td>
 														<td>{{ $teacher->first_name.' '.$teacher->last_name }}</td>
+														<td>{{ $teacher->email }}</td>
 													</tr>
 												@empty
 												@endforelse
@@ -78,22 +82,25 @@
 
 												</div>
 												<hr class="uk-grid-divider">
-												<div class="uk-form-row">
-													<label class="uk-form-label">批次上傳</label>
-													<div class="uk-form-controls">
-														<div class="uk-form-file">
-															<button class="uk-button">選擇檔案</button><span class="uk-text-muted">（可匯入EXCEL或CSV表單）</span>
-															<input type="file">
+												<form method="post" enctype="multipart/form-data" accept-charset="UTF-8" action="{!! action('Admin\AdminController@import_csv') !!}">
+													{!! csrf_field() !!}
+													<div class="uk-form-row">
+														<label class="uk-form-label">批次上傳</label>
+														<div class="uk-form-controls">
+															<div class="uk-form-file">
+																<button class="uk-button">選擇檔案</button>
+																<span class="uk-text-muted">（可匯入CSV表單）</span>
+																<input type="file" name="import_csv" />
+															</div>
 														</div>
 													</div>
 
-												</div>
-
-												<div class="uk-form-row">
-													<div class="uk-form-controls">
-														<button class="uk-button uk-button-primary">上傳</button>
+													<div class="uk-form-row">
+														<div class="uk-form-controls">
+															<button class="uk-button uk-button-primary" type="submit">上傳</button>
+														</div>
 													</div>
-												</div>
+												</form>
 
 												<br /><br />
 													<p class="uk-texxt-bold">格式範例：</p>

@@ -65,11 +65,12 @@
 													{!! $lesson[0]->description !!}
 													<br /><br />
 													@if( trim($lesson[0]->attached_doc) )
-													<a href="{!! asset('uploads/docs/'.$lesson[0]->attached_doc) !!}">Word文档</a>
+													<!-- a href="{!! asset('uploads/docs/'.$lesson[0]->attached_doc) !!}">Word文档</a -->
+													<iframe src="http://docs.google.com/gview?url={!! asset('uploads/docs/'.$lesson[0]->attached_doc) !!}&embedded=true" style="width:100%; height:600px;" frameborder="0"></iframe>
 													<br /><br />
 													@endif
 													@if( trim($lesson[0]->attached_pdf) )
-													<iframe src="{!! asset('uploads/pdfs/'.$lesson[0]->attached_pdf) !!}" width="100%" height="600"></iframe>
+													<iframe src="http://docs.google.com/gview?url={!! asset('uploads/pdfs/'.$lesson[0]->attached_pdf) !!}&embedded=true" style="width:100%; height:600px;" frameborder="0"></iframe>
 													<br /><br />
 													@endif
 

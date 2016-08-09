@@ -640,6 +640,16 @@ class TeacherController extends Controller
 		$lesson = DB::table('lessons')->where('course_id', $course[0]->id)->where('id', $lesson_id)->get();
 		return view('teachers.publish_question', compact('course', 'lesson', 'alias', 'selected_nav'));
 	}
+	public function student_answers( $alias, $course_code, $lesson_id ) {	// refreshable iframe
+		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
+		$course = DB::table('courses')->where('teacher_id', Auth::user()->id)->where('course_code', $course_code)->where('subject_id', $subject_id)->get();
+		$lesson = DB::table('lessons')->where('course_id', $course[0]->id)->where('id', $lesson_id)->get();
+		$students = DB::table('classes')
+					->join('users', 'users.id', '=', 'classes.student_id')
+					->where('classes.course_id', $course[0]->id)
+					->get();
+		return view('teachers.lh_student_answers', compact('course', 'lesson', 'students', 'alias'));
+	}
 	public function student_answer( $alias, $course_code, $lesson_id, $student_id ) {
 		// $selected_nav = 'teaching_zone';
 		$answer = DB::table('student_answers')->where('lesson_id', $lesson_id)->where('student_id', $student_id)->get();
@@ -740,10 +750,11 @@ class TeacherController extends Controller
 		$selected_nav = 'learning_history';
 		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
 		$course = DB::table('courses')->where('teacher_id', Auth::user()->id)->where('course_code', $course_code)->where('subject_id', $subject_id)->get();
-		$students = DB::table('classes')
+		$student_list = DB::table('classes')
+					->join('users', 'users.id', '=', 'classes.student_id')
 					->where('course_id', $course[0]->id)
-					->lists('student_id');
-		$student_list = DB::table('users')->whereIn('id', $students)->get();
+					->select('users.*', 'classes.seat_no')
+					->get();
 
 		return view('teachers.lh_student_list', compact('course', 'alias', 'student_list', 'selected_nav'));
 	}
