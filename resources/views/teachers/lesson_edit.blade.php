@@ -121,13 +121,13 @@
 																	<li>
 																		<span>{{ $c++ }}</span> <input type="text" name="mc_answer[]" id="mc_answer_{{ $i }}" value="{{ $answer->answer }}" placeholder="輸入選項" />
 																		&nbsp;&nbsp;&nbsp;&nbsp;
-																		<label>正确答案 <input type="radio" name="correct"<?php echo $answer->correct == $answer->answer_code ? ' checked' : ''; ?> value="{{ $i }}" /></label>
+																		<label>正確答案 <input type="radio" name="correct"<?php echo $answer->correct == $answer->answer_code ? ' checked' : ''; ?> value="{{ $i }}" /></label>
 																	</li>
 																@empty
 																	<li>
 																		<span>A</span> <input type="text" name="mc_answer[]" id="mc_answer_0" placeholder="輸入選項" />
 																		&nbsp;&nbsp;&nbsp;&nbsp;
-																		<label>正确答案 <input type="radio" name="correct" value="1" /></label>
+																		<label>正確答案 <input type="radio" name="correct" value="1" /></label>
 																	</li>
 																@endforelse
 															</ul>
@@ -155,7 +155,7 @@
 												<div class="uk-form-row">
 													<div class="uk-form-controls">
 														<button type="submit" class="uk-button uk-button-primary">儲存</button>
-														<a href="{!! action('Teacher\TeacherController@lesson_list', [$alias]) !!}" class="uk-button uk-button-default">回去</a>
+														<a href="{!! action('Teacher\TeacherController@lesson_list', [$alias]) !!}" class="uk-button uk-button-default">取消</a>
 													</div>
 												</div>
 
@@ -203,7 +203,7 @@
 					$('#add_new_options').click( function() {
 						// multiple_choices
 						$start_index = 'A';	$mc_count++;
-						$('.multiple_choices').append('<li><span>' +String.fromCharCode($start_index.charCodeAt(0) + $mc_count)+ '</span> <input type="text" name="mc_answer[]" id="mc_answer_' +$mc_count+ '" placeholder="輸入選項" required />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>正确答案 <input type="radio" name="correct" value="' +$mc_count+ '" /></label></li>');
+						$('.multiple_choices').append('<li><span>' +String.fromCharCode($start_index.charCodeAt(0) + $mc_count)+ '</span> <input type="text" name="mc_answer[]" id="mc_answer_' +$mc_count+ '" placeholder="輸入選項" required />&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<label>正確答案 <input type="radio" name="correct" value="' +$mc_count+ '" /></label></li>');
 					});
 					$('.pagination').addClass('uk-pagination');
 

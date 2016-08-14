@@ -214,7 +214,7 @@
 					$mc_count = 0;
 
 					$('.lesson_del').click( function() {
-						return confirm("Are you sure to delete this lesson?\n\nAll attached files and lesson data will be deleted.");
+						return confirm("確定要刪除此教材嗎？\n\n所有相關檔案將會被移除．");
 					});
 					$('#category').change( function() {
 						if( $(this).val() == '練習' ) {

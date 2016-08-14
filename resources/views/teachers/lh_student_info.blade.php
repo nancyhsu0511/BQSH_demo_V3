@@ -2,6 +2,7 @@
 @section('title', '板橋高中雲端學習平台')
 
 @section('content')
+				<script src="{!! asset('js/canvasjs.min.js') !!}"></script>
                 <div class="uk-width-medium-1-1">
                     <ul class="uk-breadcrumb">
                         <li><a href="{!! action('BaseController@index') !!}">首頁</a></li>
@@ -59,7 +60,16 @@
 														<td><span class="uk-text-bold">{{ $class->course_name }}</span></td>
 														<td>{{ round($course_score ? (($marks_scored / $course_score) * 100) : 0) }}%</td>
 														<td>{{ $marks_scored }}/{{ $course_score }}</td>
-														<td><img src="{!! asset('img/infography01.png') !!}" alt="統計資訊圖表"></td>
+														<td>
+															<?php
+															$scored = round($course_score ? (($marks_scored / $course_score) * 100) : 0);
+															?>
+															<!-- img src="{!! asset('img/infography01.png') !!}" alt="統計資訊圖表"-->
+															<script>
+															var chart1 = new CanvasJS.Chart("chartContainer{{ $i }}", {backgroundColor: "#EEEEEE", animationEnabled: true, data: [{ type: "doughnut", toolTipContent: "{y} %", dataPoints: [{ y: {{ $scored }} },{ y: {{ 100 - $scored }} }] }] });chart1.render(); chart1 = {};
+															</script>
+															<div id="chartContainer{{ $i }}" style="height: 103px; width: 141px;"></div>
+														</td>
 													</tr>
 												@empty
 													<tr><td colspan="4">No information found!</td></tr>

@@ -129,7 +129,7 @@
 															</div>
 															<a name="ans"></a>
 															<hr class="uk-grid-divider">
-															<p class="uk-text-primary uk-text-bold">正確答案：</p>
+															<p class="uk-text-primary uk-text-bold">你的答案：</p>
 															<div class="uk-panel">
 																<div class="uk-panel uk-panel-box">
 																	@if( $lesson[0]->question_type == '單選題' )
@@ -146,6 +146,27 @@
 																	@endif
 																</div>
 															</div>
+
+															<hr class="uk-grid-divider">
+															<?php
+															if( $lesson[0]->question_type == '單選題' ) {
+																$correct_answer = DB::table('questions')->where('lesson_id', $lesson[0]->id)->where('correct', '!=', '')->get();
+															} else {
+																$correct_answer = DB::table('questions')->where('lesson_id', $lesson[0]->id)->get();
+															}
+															?>
+															<p class="uk-text-primary uk-text-bold">正確答案：</p>
+															<div class="uk-panel">
+																<div class="uk-panel uk-panel-box">
+																	{{ $correct_answer[0]->answer }}
+																</div>
+															</div>
+
+																@if( count($selected_for_vote) )
+																<hr class="uk-grid-divider">
+																<p class="uk-text-primary uk-text-bold">投票：</p>
+																<iframe id="ifvotes" src="{!! action('Student\StudentController@student_votes', [$alias, $course[0]->course_code, $lesson[0]->id]) !!}" width="100%" scrolling="no"></iframe>
+																@endif
 															@endif
 														</div>
 													</div>
@@ -158,4 +179,9 @@
                         </div>
                     </div>
                 </div>
+				<script>
+				var setHeight = function( f, h ) {
+					$('#'+f).attr('height', h);
+				}
+				</script>
 @endsection

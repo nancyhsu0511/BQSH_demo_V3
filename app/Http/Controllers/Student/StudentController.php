@@ -26,6 +26,7 @@ class StudentController extends Controller
 	}
     public function dashboard( $alias ) {
 		$nav = 'linfo';
+		$active_tab = 'class';
 		$subject = Subject::whereAlias($alias)->first();
 		if( isset($subject->alias) ) {
 			$student = DB::table('users')->where('id', Auth::user()->id)->get();
@@ -38,7 +39,7 @@ class StudentController extends Controller
 						->select('classes.course_id', 'courses.course_code', 'courses.course_name', 'users.id', 'users.first_name', 'users.last_name')
 						->get();
 			// wtf($classes);die();
-			return view('students.learning_info', compact('alias', 'nav', 'subject', 'student', 'classes'));
+			return view('students.learning_info', compact('alias', 'nav', 'active_tab', 'subject', 'student', 'classes'));
 		} else {
 			return redirect( 'student/subject' );
 		}
@@ -108,7 +109,38 @@ class StudentController extends Controller
 		$lesson = DB::table('lessons')->where('course_id', $course[0]->id)->where('id', $id)->get();
 		$answers = DB::table('questions')->where('lesson_id', $id)->get();
 		$selected_answer = DB::table('student_answers')->where('lesson_id', $id)->where('student_id', Auth::user()->id)->get();
-		return view('students.lesson_question', compact('course', 'lesson', 'answers', 'selected_answer', 'alias', 'nav'));
+		$selected_for_vote = DB::table('student_votes')
+								->where('lesson_id', $id)
+								->get();
+		return view('students.lesson_question', compact('course', 'lesson', 'answers', 'selected_answer', 'selected_for_vote', 'alias', 'nav'));
+	}
+    public function student_votes( $alias, $course_code, $id ) {
+		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
+		$course = DB::table('courses')->where('course_code', $course_code)->where('subject_id', $subject_id)->get();
+		$lesson = DB::table('lessons')->where('course_id', $course[0]->id)->where('id', $id)->get();
+		$selected_for_vote = DB::table('student_votes')
+								->where('lesson_id', $id)
+								->get();
+		return view('students.student_votes', compact('course', 'lesson', 'selected_for_vote', 'alias'));
+	}
+    public function register_vote( Request $request, $alias, $course_code, $id ) {
+		$answer_id = $request->get('selected_answer');
+		wtf( $answer_id );
+		DB::table('student_votes')->where('answer_id', $answer_id)->increment('votes');
+		DB::table('student_votes')->where('answer_id', $answer_id)->update(['last_voted' => time()]);
+
+		$voted_by = DB::table('student_answers')
+					->where('id', $answer_id)
+					->value('voted_by');
+		if( $voted_by ) {
+			$voted_by = json_decode( $voted_by );
+			$voted_by[] = Auth::user()->id;
+			$voted_by = json_encode( $voted_by );
+		} else {
+			$voted_by = json_encode( array(Auth::user()->id) );
+		}
+		DB::table('student_answers')->where('id', $answer_id)->update([ 'voted_by' => $voted_by ]);
+		return back();
 	}
     public function store_answer( StudentAnswerRequest $request, $alias, $course_code, $id ) {
 		// wtf( $request->all() );die();

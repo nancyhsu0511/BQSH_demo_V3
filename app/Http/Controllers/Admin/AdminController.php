@@ -72,6 +72,7 @@ class AdminController extends Controller
 			// wtf( $request->all() );
 			if( count($students) ) {
 				$max_seat = DB::table('classes')->where('course_id', $course[0]->id)->max('seat_no');
+				$max_seat = ($max_seat ? $max_seat : 1);
 				foreach( $students as $i => $id ) {
 					$check = DB::table('classes')->where('course_id', $course[0]->id)->where('student_id', $id)->count();
 					if( !$check ) {
@@ -87,7 +88,7 @@ class AdminController extends Controller
 				return back()->with('error', 'Please select students to add!');
 			}
 		} else {
-			return back()->with('error', 'Invalis course code!');
+			return back()->with('error', 'Invalid course code!');
 		}
 	}
 
@@ -169,7 +170,7 @@ class AdminController extends Controller
     public function add_members(AdminUserSignupRequest $request) {
 		$now = date('Y-m-d H:i:s');
 		$pass = random_string(10);
-		$pass = 'azakaban';		// temp pass for now
+		$pass = 'pw'.($request->get('user_role') == 1 ? 'student' : ($request->get('user_role') == 2 ? 'teacher' : 'admin'));		// temp pass for now
 		$pass = Hash::make( $pass );
 		$user_id = DB::table('users')->insertGetId([					// add new user
 			'first_name'=> $request->get('first_name'),
@@ -189,17 +190,112 @@ class AdminController extends Controller
 
 	public function administer_class() {
 		$nav_tab = 'classes';
-		$classes = DB::table('courses')
-					->orderBy('created_at', 'desc')
+		$classes = DB::table('classrooms')
+					->orderBy('updated_at', 'desc')
 					->paginate(10);
 		return view('admin.classes', compact('classes', 'nav_tab'));
+	}
+	public function process_class( Request $request ) {
+		$class_code = $request->get('class_code');
+		$class_name = $request->get('class_name');
+		$seats		= $request->get('seats');
+		$act		= $request->get('act');
+
+		switch( $act ) {
+			case 'add':
+				$check = DB::table('classrooms')
+						->where('class_code', $class_code)->count();
+				if( $check ) {
+					return back()->with('error', 'Duplicate class code. Please enter different class code.');
+				}
+
+				DB::table('classrooms')->insert([
+					'class_code'	=> $class_code,
+					'class_name'	=> $class_name,
+					'seats'			=> $seats,
+					'created_at'	=> date('Y-m-d H:i:s')
+				]);
+				return back()->with('status', 'Class added successfully!');
+				break;
+			case 'edit':
+				$class_id	= $request->get('class_id');
+				$classroom	= DB::table('classrooms')
+								->where('id', $class_id)->get();
+				if( $classroom[0]->class_code != $class_code ) {
+					$check = DB::table('classrooms')
+							->where('class_code', $class_code)->count();
+					if( $check ) {
+						return back()->with('error', 'Duplicate class code. Please enter different class code.');
+					}
+				}
+
+				DB::table('classrooms')
+				->where('id', $class_id)->update([
+					'class_code'	=> $class_code,
+					'class_name'	=> $class_name,
+					'seats'			=> $seats,
+				]);
+				return back()->with('status', 'Class updated successfully!');
+				break;
+		}
+		return back();
+	}
+	public function delete_class( $id ) {
+		DB::table('classrooms')->where('id', $id)->delete();
+		DB::table('classroom_association')->where('classroom_id', $id)->delete();
+		return back()->with('status', 'Class deleted successfully!');
 	}
 	public function class_search( Request $request ) {
 		$class_code = $request->get('class_code');
 		$nav_tab = 'classes';
-		$classes = DB::table('courses')
-					->where('course_code', $class_code)
-					->paginate(10);
+		if( $class_code ) {
+			$classes = DB::table('classrooms')
+						->where('class_code', $class_code)
+						->paginate(10);
+		} else {
+			$classes = DB::table('classrooms')
+						->paginate(10);
+		}
 		return view('admin.classes', compact('classes', 'nav_tab'));
+	}
+    public function import_class_csv( Request $request ) {
+		$allowed_mime = array('text/plain', 'text/x-comma-separated-values', 'text/comma-separated-values', 'application/octet-stream', 'application/vnd.ms-excel', 'application/x-csv', 'text/x-csv', 'text/csv', 'application/csv', 'application/excel', 'application/vnd.msexcel');
+
+		if ($request->hasFile('import_csv')) {
+			$csv_file = $request->file('import_csv');
+			$mime = $csv_file->getClientMimeType();
+
+			if( in_array($mime, $allowed_mime) ) {
+				if($csv_file->isValid()) {
+					$destinationPath = 'uploads/csv';
+					$extension = $csv_file->getClientOriginalExtension();
+					$attached_csv = time().'_'.rand(11111,99999).'.'.$extension;
+					$csv_file->move($destinationPath, $attached_csv);
+				}
+			} else {
+				return back()->with('error', 'The import csv must be a file of type: csv');
+			}
+		}
+		$handle = fopen($destinationPath.'/'.$attached_csv, "r");
+		$i = 0;
+		while($data = fgetcsv($handle, 5000, ",")) {
+			if( !$i ) { $i++; continue; }
+
+			$data = array_map("utf8_encode", $data); //added
+			$data = array_map("trim", $data);
+			// wtf($data);
+
+			$check = DB::table('classrooms')
+					->where('class_code', $data[0])->count();
+			if( !$check ) {
+				DB::table('classrooms')->insert([
+					'class_code'	=> $data[0],
+					'class_name'	=> $data[1],
+					'seats'			=> $data[2],
+					'created_at'	=> date('Y-m-d H:i:s')
+				]);
+			}
+		}
+		return back()->with('status', 'Import successful!');
 	}
 }

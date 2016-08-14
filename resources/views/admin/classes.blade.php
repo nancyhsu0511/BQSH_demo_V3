@@ -36,6 +36,28 @@
 												<button class="uk-button uk-button-primary" type="submit" data-uk-button>搜尋</button>
 											</form>
 											<hr class="uk-grid-divider">
+
+											<div class="uk-form-row editbox" style="display: none;">
+												<a class="edit_cancel" style="float: right"><i class="uk-icon-times-circle"></i></a>
+												<label class="uk-form-label">編輯類</label>
+												<form id="cedit" class="uk-form uk-form-stacked" method="post" action="{!! action('Admin\AdminController@process_class') !!}">
+													<div class="uk-form-controls">
+														<div class="uk-form-file">
+															<form class="uk-form">
+															   <input type="text" name="class_code" id="class_code" value="{{ old('class_code') }}" placeholder="班級代號" class="uk-form-width-small" required />
+															   <input type="text" name="class_name" id="class_name" value="{{ old('class_name') }}" placeholder="班級名稱" class="uk-form-width-small" required />
+															   <input type="number" name="seats" id="seats" value="{{ old('seats') }}" placeholder="班級人數" min="1" max="100" class="uk-form-width-small" required />
+															   <input type="hidden" name="class_id" id="class_id" value="0" />
+															   <input type="hidden" name="act" value="edit" />
+															   <button class="uk-button uk-button-primary" type="submit" data-uk-button>編輯</button>
+															   {!! csrf_field() !!}
+															</form>
+														</div>
+													</div>
+												</form>
+											</div>
+											<hr class="uk-grid-divider edivider" style="display: none;">
+
 											<table class="uk-table uk-table-hover">
 												<thead>
 													<tr>
@@ -50,15 +72,12 @@
 												@forelse( $classes as $class )
 												<tr>
 													<td>c{{ ($class->id < 100 ? '0' : ($class->id < 10 ? '00' : '')).$class->id }}</td>
-													<td>{{ $class->course_code }}</td>
-													<td>{{ $class->course_name }}</td>
-													<td><?php
-													$count = DB::table('classes')->where('course_id', $class->id)->count();
-													echo $count;
-													?></td>
+													<td>{{ $class->class_code }}</td>
+													<td>{{ $class->class_name }}</td>
+													<td>{{ $class->seats }}</td>
 													<td>
-														<a href="" class="uk-button uk-button-success" type="button" data-uk-button>編輯</a>
-														<button class="uk-button uk-button-danger" type="button" data-uk-button>刪除</button>
+														<button class="uk-button uk-button-success edit_class" data-ccode="{{ $class->class_code }}" data-cname="{{ $class->class_name }}" data-cid="{{ $class->id }}" data-seats="{{ $class->seats }}" type="button" data-uk-button>編輯</button>
+														<button class="uk-button uk-button-danger del_class" data-ccode="{{ $class->class_code }}" data-cname="{{ $class->class_name }}" data-cid="{{ $class->id }}" data-seats="{{ $class->seats }}" type="button" data-uk-button>刪除</button>
 													</td>
 												</tr>
 												@empty
@@ -72,28 +91,33 @@
 										<li class="uk-active" aria-hidden="false">
 											<!--2nd TAB CONTENT START-->
 											<br />
-											<form class="uk-form uk-form-stacked">
-												<div class="uk-form-row">
-													<label class="uk-form-label">手動新增</label>
+											<div class="uk-form-row">
+												<label class="uk-form-label">手動新增</label>
+												<form class="uk-form uk-form-stacked" method="post" action="{!! action('Admin\AdminController@process_class') !!}">
 													<div class="uk-form-controls">
 														<div class="uk-form-file">
 															<form class="uk-form">
-															   <input type="text" placeholder="班級代號" class="uk-form-width-small"> 
-															   <input type="text" placeholder="班級名稱" class="uk-form-width-small"> 
-															   <input type="text" placeholder="班級人數" class="uk-form-width-small"> 
-															   <button class="uk-button uk-button-primary" type="button" data-uk-button>新增</button>
+															   <input type="text" name="class_code" value="{{ old('class_code') }}" placeholder="班級代號" class="uk-form-width-small" required />
+															   <input type="text" name="class_name" value="{{ old('class_name') }}" placeholder="班級名稱" class="uk-form-width-small" required />
+															   <input type="number" name="seats" value="{{ old('seats') }}" placeholder="班級人數" min="1" max="100" class="uk-form-width-small" required />
+															   <input type="hidden" name="act" value="add" />
+															   <button class="uk-button uk-button-primary" type="submit" data-uk-button>新增</button>
+															   {!! csrf_field() !!}
 															</form>
 														</div>
 													</div>
+												</form>
+											</div>
+											<hr class="uk-grid-divider">
 
-												</div>
-												<hr class="uk-grid-divider">
+											<form class="uk-form uk-form-stacked" method="post" enctype="multipart/form-data" accept-charset="UTF-8" action="{!! action('Admin\AdminController@import_class_csv') !!}">
+												{!! csrf_field() !!}
 												<div class="uk-form-row">
 													<label class="uk-form-label">批次上傳</label>
 													<div class="uk-form-controls">
 														<div class="uk-form-file">
-															<button class="uk-button">選擇檔案</button><span class="uk-text-muted">（可匯入EXCEL或CSV表單）</span>
-															<input type="file">
+															<button class="uk-button">選擇檔案</button><span class="uk-text-muted">（可匯入CSV表單）</span>
+															<input type="file" name="import_csv" />
 														</div>
 													</div>
 
@@ -131,6 +155,29 @@
                     </div>
 				</div>
 				<script>
-				$('.pagination').addClass('uk-pagination');
+				$(document).ready(function() {
+					$('.pagination').addClass('uk-pagination');
+
+					$('.edit_cancel').click( function() {
+						$('#cedit')[0].reset();
+						$('.editbox').hide(100);
+						$('.edivider').hide(100);
+					});
+					$('.del_class').click( function() {
+						if( confirm("Are you sure to delete this class?\n\n班級代號: " +$(this).attr('data-ccode')+ "\n班級名稱: " +$(this).attr('data-cname')+ "\n班級人數: " +$(this).attr('data-seats')) ) {
+							window.location="{{ action('Admin\AdminController@delete_class', '') }}/" +$(this).attr('data-cid');
+						}
+						return false;
+					});
+					$('.edit_class').click( function() {
+						$('#cedit')[0].reset();
+						$('.editbox').show(100);
+						$('.edivider').show(100);
+						$('#class_code').val( $(this).attr('data-ccode') );
+						$('#class_name').val( $(this).attr('data-cname') );
+						$('#seats').val( $(this).attr('data-seats') );
+						$('#class_id').val( $(this).attr('data-cid') );
+					});
+				});
 				</script>
 @endsection

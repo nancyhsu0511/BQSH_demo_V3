@@ -262,7 +262,7 @@ class TeacherController extends Controller
 		// delete lesson data
 		DB::table('lessons')->where('id', $id)->delete();
 
-		return back()->with('status', 'Lesson deleted successfully!');
+		return back()->with('status', '教材已刪除！');
 	}
     public function lesson_create(LessonFormRequest $request, $alias/*, $course_id*/) {
 		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
@@ -452,7 +452,7 @@ class TeacherController extends Controller
 			}
 		}
 
-		return back()->with('status', 'Lesson updated successfully!');
+		return back()->with('status', '課程已更新！');
 	}
 
     // Teaching Zone
@@ -638,7 +638,10 @@ class TeacherController extends Controller
 		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
 		$course = DB::table('courses')->where('teacher_id', Auth::user()->id)->where('course_code', $course_code)->where('subject_id', $subject_id)->get();
 		$lesson = DB::table('lessons')->where('course_id', $course[0]->id)->where('id', $lesson_id)->get();
-		return view('teachers.publish_question', compact('course', 'lesson', 'alias', 'selected_nav'));
+		$selected_for_vote = DB::table('student_votes')
+								->where('lesson_id', $lesson[0]->id)
+								->get();
+		return view('teachers.publish_question', compact('course', 'lesson', 'selected_for_vote', 'alias', 'selected_nav'));
 	}
 	public function student_answers( $alias, $course_code, $lesson_id ) {	// refreshable iframe
 		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
@@ -649,6 +652,34 @@ class TeacherController extends Controller
 					->where('classes.course_id', $course[0]->id)
 					->get();
 		return view('teachers.lh_student_answers', compact('course', 'lesson', 'students', 'alias'));
+	}
+	public function student_votes( $alias, $course_code, $lesson_id ) {
+		// $selected_nav = 'teaching_zone';
+		$subject_id = $alias ? DB::table('subjects')->where('alias', $alias)->value('id') : 0;
+		$course = DB::table('courses')->where('teacher_id', Auth::user()->id)->where('course_code', $course_code)->where('subject_id', $subject_id)->get();
+		$lesson = DB::table('lessons')->where('course_id', $course[0]->id)->where('id', $lesson_id)->get();
+		$selected_for_vote = DB::table('student_votes')
+								->where('lesson_id', $lesson[0]->id)
+								->get();
+		return view('teachers.lh_student_votes', compact('course', 'lesson', 'selected_for_vote', 'alias'));
+	}
+	public function student_answers_vote( Request $request, $alias, $course_code, $lesson_id ) {
+		$selected_answers = $request->get('selected_answers');
+		// wtf($selected_answers);
+		foreach( $selected_answers as $answer_id ) {
+			$check = DB::table('student_votes')
+					->where('answer_id', $answer_id)
+					->where('lesson_id', $lesson_id)
+					->count();
+			if( !$check ) {
+				DB::table('student_votes')->insert([
+					'answer_id'	=> $answer_id,
+					'lesson_id'	=> $lesson_id,
+					'last_voted'=> time()
+				]);
+			}
+		}
+		return back();
 	}
 	public function student_answer( $alias, $course_code, $lesson_id, $student_id ) {
 		// $selected_nav = 'teaching_zone';

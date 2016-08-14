@@ -64,7 +64,7 @@
 													<!-- <h3>觀念：<span class="uk-text-primary uk-text-bold">「拋物線」</span></h3> -->
 												</div>
 												<div class="uk-width-medium-1-2 uk-text-right">
-													<a href="{!! action('Teacher\TeacherController@lesson_edit', [$alias, $lesson[0]->id]) !!}" class="uk-button uk-button-success uk-text-right">编辑课</a>
+													<a href="{!! action('Teacher\TeacherController@lesson_edit', [$alias, $lesson[0]->id]) !!}" class="uk-button uk-button-success uk-text-right">編輯課程</a>
 												</div>
 											</div>
 											<br />

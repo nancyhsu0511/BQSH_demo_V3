@@ -22,12 +22,12 @@
                             <div class="uk-grid" data-uk-grid-margin="">
 								<div class="uk-width-medium-1-1">
 									<ul class="uk-tab" data-uk-switcher="{connect:&#39;#switcher-content&#39;}">
-										<li aria-expanded="false"><a href="#"><i class="uk-icon-list-alt"></i> 課程專區</a></li>
-										<li class="uk-active" aria-expanded="true"><a href="#"><i class="uk-icon-clock-o"> </i> 學習紀錄</a></li>
+										<li<?php echo $active_tab == 'class' ? ' class="uk-active" aria-expanded="true"' : ' aria-expanded="false"'; ?>><a href="#"><i class="uk-icon-list-alt"></i> 課程專區</a></li>
+										<li<?php echo $active_tab != 'class' ? ' class="uk-active" aria-expanded="true"' : ' aria-expanded="false"'; ?>><a href="#"><i class="uk-icon-clock-o"> </i> 學習紀錄</a></li>
 									</ul>
 
 									<ul id="switcher-content" class="uk-switcher">
-										<li aria-hidden="true">
+										<li<?php echo $active_tab == 'class' ? ' class="uk-active" aria-hidden="false"' : ' aria-hidden="true"'; ?>>
 											<br />      
 											<form class="uk-form" method="post">
 												{!! csrf_field() !!}
@@ -63,7 +63,7 @@
 												</tbody>
 											</table>
 										</li>
-										<li class="uk-active" aria-hidden="false">
+										<li<?php echo $active_tab != 'class' ? ' class="uk-active" aria-hidden="false"' : ' aria-hidden="true"'; ?>>
 											<!--2nd TAB CONTENT START-->
 											<br /> 
 												   

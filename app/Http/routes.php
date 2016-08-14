@@ -41,7 +41,10 @@ Route::group(array('prefix' => 'admin', 'namespace' => 'Admin', 'middleware' => 
 	Route::post('accounts/administrators','AdminController@add_members');
 
 	Route::get('classes','AdminController@administer_class');
+	Route::post('process_class','AdminController@process_class');
 	Route::post('classes','AdminController@class_search');
+	Route::get('classe_delete/{id?}','AdminController@delete_class');
+	Route::post('classes/import','AdminController@import_class_csv');
 
 	//------------------------//
 	Route::get('users', [ 'as' => 'admin.user.index', 'uses' => 'UsersController@index']);
@@ -66,6 +69,8 @@ Route::group( array('prefix' => 'student', 'namespace' => 'Student', 'middleware
 	Route::get('subject/{alias?}/{course_code?}/concept/{id?}', 'StudentController@lesson_concept');
 	Route::get('subject/{alias?}/{course_code?}/question/{id?}', 'StudentController@lesson_question');
 	Route::post('subject/{alias?}/{course_code?}/question/{id?}', 'StudentController@store_answer');
+	Route::get('subject/{alias?}/{course_code?}/question/{id?}/student_votes', 'StudentController@student_votes');
+	Route::post('subject/{alias?}/{course_code?}/question/{id?}/student_votes', 'StudentController@register_vote');
 });
 Route::group( array('prefix' => 'teacher', 'namespace' => 'Teacher', 'middleware' => 'tmanager'), function() {
 	Route::get('/', 'TeacherController@index');
@@ -112,6 +117,8 @@ Route::group( array('prefix' => 'teacher', 'namespace' => 'Teacher', 'middleware
 	Route::get('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}', 'TeacherController@publish_question');
 	Route::post('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}', 'TeacherController@save_closing_time');
 	Route::get('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}/student_answers', 'TeacherController@student_answers');
+	Route::post('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}/student_answers', 'TeacherController@student_answers_vote');
+	Route::get('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}/student_votes', 'TeacherController@student_votes');
 
 	Route::get('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}/answer/{student_id?}', 'TeacherController@student_answer');
 	Route::get('subject/{alias?}/teaching_zone/{course_code?}/publish_question/{lesson_id?}/score_answer/{student_id?}', 'TeacherController@score_student_answer');
